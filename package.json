@@ -1,0 +1,16 @@
+{
+  "name": "todoi",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run index.ts",
+    "db:migrate:gen": "bun run scripts/gen-migration.ts",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "db:drop": "bun run scripts/drop-db.ts"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
