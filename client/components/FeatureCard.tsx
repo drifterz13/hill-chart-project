@@ -1,5 +1,9 @@
 import { MoreHorizontal, SignalHigh } from "lucide-react";
 import AvatarGroup from "./AvatarGroup";
+import type { FeatureStage, FeatureStatus } from "../types/feature-types";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 type Avatar = {
   id: string | number;
@@ -7,36 +11,35 @@ type Avatar = {
   alt: string;
 };
 
-type ProjectStatus = "uphill" | "peak" | "downhill";
-
-type ProjectCardProps = {
-  id: string | number;
+type FeatureCardProps = {
+  id: string;
   title: string;
   description: string;
-  status?: ProjectStatus;
+  status?: FeatureStatus;
+  stage: FeatureStage;
   progress?: number;
   avatars?: Avatar[];
-  dueDate?: string;
+  dueDate?: Date;
   onClick?: (id: string | number) => void;
   onMenuClick?: (id: string | number) => void;
 };
 
-export default function ProjectCard({
+export default function FeatureCard({
   id,
   title,
   description,
-  status,
+  stage,
   progress,
   avatars = [],
   dueDate,
   onClick,
   onMenuClick,
-}: ProjectCardProps) {
-  const getStatusInfo = (status?: ProjectStatus) => {
-    switch (status) {
+}: FeatureCardProps) {
+  const getStageInfo = (stage?: FeatureStage) => {
+    switch (stage) {
       case "uphill":
         return { color: "text-blue-500", label: "Uphill" };
-      case "peak":
+      case "at-peak":
         return { color: "text-green-500", label: "At the peak" };
       case "downhill":
         return { color: "text-green-500", label: "Downhill" };
@@ -45,7 +48,22 @@ export default function ProjectCard({
     }
   };
 
-  const statusInfo = status ? getStatusInfo(status) : null;
+  const stageInfo = stage ? getStageInfo(stage) : null;
+
+  const getDueDateInfo = (dueDate?: Date) => {
+    if (!dueDate) return null;
+
+    if (dayjs().isAfter(dayjs(dueDate))) {
+      return `Overdue ${dayjs(dueDate).fromNow()}`;
+    }
+    if (dayjs().isSame(dayjs(dueDate), "day")) {
+      return "Due today";
+    }
+
+    return `Due in ${dayjs(dueDate).toNow(true)}`;
+  };
+
+  const dueDateInfo = getDueDateInfo(dueDate);
 
   return (
     <div
@@ -74,11 +92,11 @@ export default function ProjectCard({
       </div>
 
       {/* Status or Progress */}
-      {statusInfo ? (
+      {stageInfo ? (
         <div className="flex items-center gap-2">
-          <SignalHigh size={20} className={statusInfo.color} />
+          <SignalHigh size={20} className={stageInfo.color} />
           <p className="text-gray-600 dark:text-gray-400 text-sm">
-            {statusInfo.label}
+            {stageInfo.label}
           </p>
         </div>
       ) : progress !== undefined ? (
@@ -107,8 +125,10 @@ export default function ProjectCard({
         ) : (
           <div />
         )}
-        {dueDate && (
-          <p className="text-gray-600 dark:text-gray-400 text-xs">{dueDate}</p>
+        {dueDateInfo && (
+          <p className="text-gray-600 dark:text-gray-400 text-xs">
+            {dueDateInfo}
+          </p>
         )}
       </div>
     </div>

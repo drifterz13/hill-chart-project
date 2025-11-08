@@ -1,37 +1,40 @@
 import homepage from "../public/index.html";
-import { sql } from "bun";
+import { FeatureService } from "./services/feature-service";
 
 const server = Bun.serve({
   port: Bun.env.PORT || 3000,
   routes: {
     "/": homepage,
     "/api/health": () => new Response("OK"),
-    "/api/todos": {
+    "/api/features": {
       GET: async () => {
-        const values = await sql`
-            SELECT id, title, completed, created_at, updated_at 
-            FROM todos
-            ORDER BY created_at DESC;
-          `.values();
-
-        const todos = values.map((row: any[]) => ({
-          id: row[0],
-          title: row[1],
-          completed: row[2],
-          created_at: row[3],
-          updated_at: row[4],
-        }));
-
-        return Response.json(todos);
+        const features = await FeatureService.getFeatures();
+        return Response.json(features);
       },
       POST: async (req) => {
-        const todo = await req.json();
-        await sql`
-          INSERT INTO todos ${sql(todo, "title")}
-        `;
-        return new Response("Todo Created", { status: 201 });
+        const feature = await req.json();
+        await FeatureService.createFeature(feature);
+        return new Response("Feature Created", { status: 201 });
       },
     },
+  },
+  async fetch(req) {
+    const url = new URL(req.url);
+    const path = url.pathname;
+
+    const imagePath = `./public/images${path}`;
+
+    try {
+      const file = Bun.file(imagePath);
+      if (await file.exists()) {
+        return new Response(file); // Bun automatically sets Content-Type
+      } else {
+        return new Response("Not Found", { status: 404 });
+      }
+    } catch (error) {
+      console.error("Error serving file:", error);
+      return new Response("Internal Server Error", { status: 500 });
+    }
   },
   development: {
     hmr: Bun.env.NODE_ENV !== "production",
