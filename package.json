@@ -4,13 +4,19 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run index.ts",
-    "db:migrate:gen": "bun run scripts/gen-migration.ts",
-    "db:migrate": "bun run scripts/migrate.ts",
-    "db:drop": "bun run scripts/drop-db.ts"
+    "dev": "bun run --hot server/index.ts",
+    "db:migrate:gen": "bun run server/scripts/gen-migration.ts",
+    "db:migrate": "bun run server/scripts/migrate.ts",
+    "db:drop": "bun run server/scripts/drop-db.ts"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/react-dom": "^19.2.2"
+  },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }
