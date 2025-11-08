@@ -36,9 +36,9 @@ export default function TaskList({
   const allAssignees = Array.from(
     new Set(
       tasks.flatMap((task) =>
-        (task.assignees || []).map((a) => a.alt || `User ${a.id}`)
-      )
-    )
+        (task.assignees || []).map((a) => a.alt || `User ${a.id}`),
+      ),
+    ),
   );
 
   // Filter and sort tasks
@@ -46,7 +46,7 @@ export default function TaskList({
 
   if (assigneeFilter) {
     filteredTasks = filteredTasks.filter((task) =>
-      (task.assignees || []).some((a) => a.alt === assigneeFilter)
+      (task.assignees || []).some((a) => a.alt === assigneeFilter),
     );
   }
 
@@ -92,7 +92,15 @@ export default function TaskList({
           filteredTasks.map((task) => (
             <TaskItem
               key={task.id}
-              {...task}
+              id={task.id}
+              title={task.title}
+              completed={task.completed}
+              dueDate={task.dueDate}
+              assignees={(task.assignees || []).map((assignee) => ({
+                id: assignee.id,
+                src: assignee.src,
+                alt: assignee.alt,
+              }))}
               onToggle={onToggleTask}
               onClick={onClickTask}
             />

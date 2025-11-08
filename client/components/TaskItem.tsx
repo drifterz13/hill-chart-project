@@ -1,4 +1,5 @@
 import AvatarGroup from "./AvatarGroup";
+import dayjs from "dayjs";
 
 type Avatar = {
   id: string | number;
@@ -70,8 +71,10 @@ export default function TaskItem({
       </span>
       {assignees.length > 0 && <AvatarGroup avatars={assignees} />}
       {dueDate && (
-        <span className={`text-sm px-2.5 py-1 rounded-full ${getDueDateStyle()}`}>
-          {dueDate}
+        <span
+          className={`text-sm px-2.5 py-1 rounded-full ${getDueDateStyle()}`}
+        >
+          {dayjs(dueDate).format("MMM D")}
         </span>
       )}
     </div>

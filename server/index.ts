@@ -46,6 +46,7 @@ const server = Bun.serve({
         const taskId = await TaskService.createTask({
           title: body.title,
           featureId,
+          assigneeIds: body.assigneeIds,
           dueDate: body.dueDate,
         });
         return Response.json({ id: taskId }, { status: 201 });

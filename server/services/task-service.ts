@@ -72,14 +72,16 @@ export class TaskService {
 
       const taskId = result[0];
 
-      // Insert task assignees if provided
+      console.log("Created task with ID:", taskId);
+      console.log("Assignee IDs:", task.assigneeIds);
+
       if (task.assigneeIds && task.assigneeIds.length > 0) {
-        for (const assigneeId of task.assigneeIds) {
-          await sql`
-            INSERT INTO task_assignees (task_id, assignee_id)
-            VALUES (${taskId}, ${assigneeId})
-          `;
-        }
+        const taskAssignees = task.assigneeIds.map((assigneeId) => ({
+          task_id: taskId,
+          assignee_id: assigneeId,
+        }));
+
+        await sql`insert into task_assignees ${sql(taskAssignees)}`;
       }
 
       return taskId;
