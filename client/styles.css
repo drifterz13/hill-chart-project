@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #137fec;
+  --color-progress-green: #28a745;
+  --color-background: #f6f7f8;
+  --color-text-primary: #212529;
+  --color-text-secondary: #6c757d;
+  --color-border: #e9ecef;
+  --color-card: #ffffff;
+
+  /* Font Family */
+  --font-display: Inter, sans-serif;
+}
