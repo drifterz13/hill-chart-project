@@ -6,7 +6,7 @@ type Avatar = {
   alt: string;
 };
 
-type TodoItemProps = {
+type TaskItemProps = {
   id: number;
   title: string;
   completed: boolean;
@@ -16,7 +16,7 @@ type TodoItemProps = {
   onClick?: (id: number) => void;
 };
 
-export default function TodoItem({
+export default function TaskItem({
   id,
   title,
   completed,
@@ -24,7 +24,7 @@ export default function TodoItem({
   assignees = [],
   onToggle,
   onClick,
-}: TodoItemProps) {
+}: TaskItemProps) {
   const getDueDateStyle = () => {
     if (completed) {
       return "text-green-600 bg-green-100 dark:text-green-300 dark:bg-green-900/50";

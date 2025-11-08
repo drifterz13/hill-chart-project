@@ -29,16 +29,16 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const handleProjectClick = (id: string | number) => {
-    navigate(`/projects/${id}`);
+  const handleFeatureClick = (id: string | number) => {
+    navigate(`/features/${id}`);
   };
 
-  const handleProjectMenuClick = (id: string | number) => {
-    console.log("Menu clicked for project:", id);
+  const handleFeatureMenuClick = (id: string | number) => {
+    console.log("Menu clicked for feature:", id);
   };
 
-  const handleAddProject = () => {
-    navigate("/projects/new");
+  const handleAddFeature = () => {
+    navigate("/features/new");
   };
 
   return (
@@ -56,14 +56,14 @@ export default function DashboardPage() {
           {/* Page Heading */}
           <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
             <h2 className="text-gray-900 dark:text-gray-100 text-3xl font-bold tracking-tight">
-              All Projects
+              All Features
             </h2>
             <button
-              onClick={handleAddProject}
+              onClick={handleAddFeature}
               className="flex min-w-[84px] items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-blue-500 text-white text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors"
             >
               <Plus size={20} />
-              <span className="truncate">Add New Project</span>
+              <span className="truncate">Add New Feature</span>
             </button>
           </div>
 
@@ -95,24 +95,24 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Project Grid */}
+          {/* Feature Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {features.map((project) => (
+            {features.map((feature) => (
               <FeatureCard
-                key={project.id}
-                id={project.id}
-                title={project.name}
-                description={project.description}
-                stage={project.stage}
-                avatars={project.assignees.map((assignee) => ({
+                key={feature.id}
+                id={feature.id}
+                title={feature.name}
+                description={feature.description}
+                stage={feature.stage}
+                avatars={feature.assignees.map((assignee) => ({
                   id: assignee.username,
                   src: assignee.avatarUrl,
                   alt: `Avatar of ${assignee.username}`,
                 }))}
-                dueDate={project.dueDate}
-                progress={project.progress}
-                onClick={handleProjectClick}
-                onMenuClick={handleProjectMenuClick}
+                dueDate={feature.dueDate}
+                progress={feature.progress}
+                onClick={handleFeatureClick}
+                onMenuClick={handleFeatureMenuClick}
               />
             ))}
           </div>

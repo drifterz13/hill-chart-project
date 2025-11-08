@@ -1,25 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "./Modal";
-import { Calendar, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { AssigneeApi } from "../api/assignee-api";
+import type { Assignee } from "../types/task-types";
 
-type AddTodoModalProps = {
+type AddTaskModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (todo: {
+  onSubmit: (task: {
     title: string;
-    assignee: string;
-    dueDate: string;
+    assigneeIds: number[];
+    dueDate?: string;
   }) => void;
 };
 
-export default function AddTodoModal({
+export default function AddTaskModal({
   isOpen,
   onClose,
   onSubmit,
-}: AddTodoModalProps) {
+}: AddTaskModalProps) {
   const [taskName, setTaskName] = useState("");
-  const [assignee, setAssignee] = useState("");
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState<number[]>([]);
   const [dueDate, setDueDate] = useState("");
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      AssigneeApi.getAssignees()
+        .then(setAssignees)
+        .catch(console.error);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,27 +41,34 @@ export default function AddTodoModal({
 
     onSubmit({
       title: taskName,
-      assignee,
-      dueDate,
+      assigneeIds: selectedAssigneeIds,
+      dueDate: dueDate || undefined,
     });
 
     // Reset form
     setTaskName("");
-    setAssignee("");
+    setSelectedAssigneeIds([]);
     setDueDate("");
-    onClose();
   };
 
   const handleCancel = () => {
     // Reset form
     setTaskName("");
-    setAssignee("");
+    setSelectedAssigneeIds([]);
     setDueDate("");
     onClose();
   };
 
+  const handleAssigneeChange = (assigneeId: number) => {
+    setSelectedAssigneeIds((prev) =>
+      prev.includes(assigneeId)
+        ? prev.filter((id) => id !== assigneeId)
+        : [...prev, assigneeId],
+    );
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} title="Add New To-Do">
+    <Modal isOpen={isOpen} onClose={handleCancel} title="Add New Task">
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* Task Name */}
         <label className="flex flex-col min-w-40 flex-1">
@@ -68,26 +86,35 @@ export default function AddTodoModal({
         </label>
 
         {/* Assign to */}
-        <label className="flex flex-col min-w-40 flex-1">
+        <div className="flex flex-col min-w-40 flex-1">
           <p className="text-slate-800 dark:text-slate-300 text-base font-medium leading-normal pb-2">
             Assign to
           </p>
-          <div className="relative">
-            <select
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-              className="form-select flex w-full min-w-0 flex-1 appearance-none resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-200 focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:border-blue-500 dark:focus:border-blue-500 h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 py-3 text-base font-normal leading-normal pr-10"
-            >
-              <option value="">Select a team member</option>
-              <option value="Alex Johnson">Alex Johnson</option>
-              <option value="Maria Garcia">Maria Garcia</option>
-              <option value="James Smith">James Smith</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 dark:text-slate-400">
-              <ChevronDown size={20} />
-            </div>
+          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-3">
+            {assignees.length === 0 ? (
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Loading assignees...
+              </p>
+            ) : (
+              assignees.map((assignee) => (
+                <label
+                  key={assignee.id}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedAssigneeIds.includes(assignee.id)}
+                    onChange={() => handleAssigneeChange(assignee.id)}
+                    className="w-4 h-4 text-blue-500 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="text-slate-900 dark:text-slate-200 text-sm">
+                    {assignee.username}
+                  </span>
+                </label>
+              ))
+            )}
           </div>
-        </label>
+        </div>
 
         {/* Due Date */}
         <label className="flex flex-col min-w-40 flex-1">

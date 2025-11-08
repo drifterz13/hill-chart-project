@@ -1,24 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Plus, X, HelpCircle, CheckCircle } from "lucide-react";
+import { FeatureApi } from "../api/feature-api";
 
-type Task = {
+type FormTask = {
   id: string;
   title: string;
 };
 
-export default function CreateProjectPage() {
+export default function CreateFeaturePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [featureName, setFeatureName] = useState("");
+  const [featureDescription, setFeatureDescription] = useState("");
+  const [tasks, setTasks] = useState<FormTask[]>([]);
   const [taskInput, setTaskInput] = useState("");
+  const [createdFeatureId, setCreatedFeatureId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!projectName.trim()) {
+    if (!featureName.trim()) {
       return;
     }
 
@@ -29,7 +32,7 @@ export default function CreateProjectPage() {
   const handleAddTask = () => {
     if (!taskInput.trim()) return;
 
-    const newTask: Task = {
+    const newTask: FormTask = {
       id: Date.now().toString(),
       title: taskInput,
     };
@@ -42,16 +45,24 @@ export default function CreateProjectPage() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const handleCreateProject = () => {
-    // TODO: Call API to create project with tasks
-    console.log("Creating project:", {
-      name: projectName,
-      description: projectDescription,
-      tasks,
-    });
+  const handleCreateFeature = async () => {
+    setIsCreating(true);
 
-    // Move to step 3 (success screen)
-    setStep(3);
+    try {
+      const { id } = await FeatureApi.createFeatureWithTasks({
+        name: featureName,
+        description: featureDescription || undefined,
+        tasks: tasks.map((task) => ({ title: task.title })),
+      });
+
+      setCreatedFeatureId(id);
+      setStep(3);
+    } catch (error) {
+      console.error("Failed to create feature:", error);
+      alert("Failed to create feature. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleCancel = () => {
@@ -62,7 +73,7 @@ export default function CreateProjectPage() {
     setStep(1);
   };
 
-  // Step 1: Project Details
+  // Step 1: Feature Details
   if (step === 1) {
     return (
       <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900">
@@ -70,29 +81,29 @@ export default function CreateProjectPage() {
           {/* Page Heading */}
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white">
-              Create a new project
+              Create a new feature
             </h1>
             <p className="mt-2 text-base leading-normal text-slate-600 dark:text-slate-400">
-              Give your new project a name and a brief description to get
+              Give your new feature a name and a brief description to get
               started.
             </p>
           </div>
 
           {/* Form Container */}
           <form onSubmit={handleStep1Submit} className="flex flex-col gap-6">
-            {/* Project Name TextField */}
+            {/* Feature Name TextField */}
             <div>
               <label
-                htmlFor="project-name"
+                htmlFor="feature-name"
                 className="block pb-2 text-base font-medium text-slate-900 dark:text-slate-100"
               >
-                Project Name
+                Feature Name
               </label>
               <input
-                id="project-name"
+                id="feature-name"
                 type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
+                value={featureName}
+                onChange={(e) => setFeatureName(e.target.value)}
                 autoFocus
                 required
                 className="form-input flex h-12 w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-slate-300 bg-white p-3 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
@@ -100,20 +111,20 @@ export default function CreateProjectPage() {
               />
             </div>
 
-            {/* Project Description TextField */}
+            {/* Feature Description TextField */}
             <div>
               <label
-                htmlFor="project-description"
+                htmlFor="feature-description"
                 className="block pb-2 text-base font-medium text-slate-900 dark:text-slate-100"
               >
-                Project Description (optional)
+                Feature Description (optional)
               </label>
               <textarea
-                id="project-description"
-                value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
+                id="feature-description"
+                value={featureDescription}
+                onChange={(e) => setFeatureDescription(e.target.value)}
                 className="form-input flex min-h-36 w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg border border-slate-300 bg-white p-3 text-base font-normal leading-normal text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                placeholder="e.g., A short summary of what this project is about..."
+                placeholder="e.g., A short summary of what this feature is about..."
               />
             </div>
 
@@ -158,10 +169,10 @@ export default function CreateProjectPage() {
               <div className="flex flex-wrap justify-center gap-3 p-4">
                 <div className="flex min-w-72 flex-col gap-3">
                   <h1 className="text-slate-900 dark:text-slate-50 text-4xl font-black leading-tight tracking-[-0.033em]">
-                    Project Created Successfully!
+                    Feature Created Successfully!
                   </h1>
                   <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">
-                    Your new project is set up and ready to go.
+                    Your new feature is set up and ready to go.
                   </p>
                 </div>
               </div>
@@ -171,13 +182,13 @@ export default function CreateProjectPage() {
                 <div className="flex flex-col items-stretch justify-start rounded-xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-6">
                   <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-2 text-left">
                     <p className="text-slate-900 dark:text-slate-50 text-lg font-bold leading-tight tracking-[-0.015em]">
-                      {projectName}
+                      {featureName}
                     </p>
                     <div className="flex items-end gap-3 justify-between">
                       <div className="flex flex-col gap-1">
                         <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">
-                          {projectDescription ||
-                            "A brief summary of the project you just created."}
+                          {featureDescription ||
+                            "A brief summary of the feature you just created."}
                         </p>
                         <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">
                           Initial Tasks: {tasks.length}
@@ -192,10 +203,10 @@ export default function CreateProjectPage() {
               <div className="flex justify-center w-full mt-8">
                 <div className="flex flex-1 gap-4 flex-wrap px-4 py-3 max-w-lg justify-center sm:flex-nowrap">
                   <button
-                    onClick={() => navigate("/projects/1")}
+                    onClick={() => navigate(`/features/${createdFeatureId}`)}
                     className="flex min-w-[84px] w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-blue-500 text-white text-base font-bold leading-normal tracking-[0.015em] grow transition-colors hover:bg-blue-600"
                   >
-                    <span className="truncate">Go to Project</span>
+                    <span className="truncate">Go to Feature</span>
                   </button>
                   <button
                     onClick={() => navigate("/")}
@@ -224,7 +235,7 @@ export default function CreateProjectPage() {
                 <HelpCircle size={32} />
               </div>
               <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-                Project Creation
+                Feature Creation
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -246,7 +257,7 @@ export default function CreateProjectPage() {
                 onClick={handleBack}
                 className="text-gray-600 dark:text-gray-400 text-sm font-medium hover:text-blue-500 dark:hover:text-white transition-colors"
               >
-                Create Project
+                Create Feature
               </button>
               <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
                 /
@@ -256,10 +267,10 @@ export default function CreateProjectPage() {
               </span>
             </div>
 
-            {/* Project Title */}
+            {/* Feature Title */}
             <div className="flex flex-col gap-2 mb-8">
               <h2 className="text-3xl font-black tracking-tighter sm:text-4xl text-gray-900 dark:text-white">
-                {projectName}
+                {featureName}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-base">
                 What are the first few things that need to get done?
@@ -334,14 +345,18 @@ export default function CreateProjectPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row-reverse gap-3 pt-8">
               <button
-                onClick={handleCreateProject}
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 bg-blue-500 text-white text-base font-bold transition-opacity hover:opacity-90"
+                onClick={handleCreateFeature}
+                disabled={isCreating}
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 bg-blue-500 text-white text-base font-bold transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="truncate">Create Project</span>
+                <span className="truncate">
+                  {isCreating ? "Creating..." : "Create Feature"}
+                </span>
               </button>
               <button
                 onClick={handleBack}
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 bg-transparent text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 border border-gray-200 dark:border-gray-700 text-base font-bold transition-colors"
+                disabled={isCreating}
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 bg-transparent text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 border border-gray-200 dark:border-gray-700 text-base font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="truncate">Back</span>
               </button>

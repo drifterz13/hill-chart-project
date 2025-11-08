@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import "./HillChart.css";
 
 type HillChartItem = {
@@ -18,61 +18,65 @@ type PositionedItem = HillChartItem & {
   originalY: number;
 };
 
+// Constants
+const SVG_WIDTH = 800;
+const SVG_HEIGHT = 400;
+const SVG_PADDING = 60;
+const CHART_WIDTH = SVG_WIDTH - SVG_PADDING * 2;
+const CHART_HEIGHT = SVG_HEIGHT - SVG_PADDING * 2;
+const MIN_DISTANCE = 40; // Minimum horizontal distance between dots
+const VERTICAL_SPACING = 30; // Vertical spacing when stacking
+const DOT_RADIUS = 8;
+const GLOW_RADIUS = 20;
+const LABEL_OFFSET = 15;
+const POSITION_INDICATOR_OFFSET = 25;
+
+// Bezier curve control points (extracted to avoid duplication)
+const BEZIER_START_X = SVG_PADDING;
+const BEZIER_START_Y = SVG_PADDING + CHART_HEIGHT;
+const BEZIER_END_X = SVG_PADDING + CHART_WIDTH;
+const BEZIER_END_Y = SVG_PADDING + CHART_HEIGHT;
+const BEZIER_CONTROL_X = SVG_PADDING + CHART_WIDTH / 2;
+const BEZIER_CONTROL_Y = SVG_PADDING;
+
 export default function HillChart({ items, onPositionChange }: HillChartProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [dragPosition, setDragPosition] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const width = 800;
-  const height = 400;
-  const padding = 60;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
-  const minDistance = 40; // Minimum horizontal distance between dots
-  const verticalSpacing = 30; // Vertical spacing when stacking
+  // Generate hill curve using quadratic bezier (memoized)
+  const hillPath = useMemo(() => {
+    return `M ${BEZIER_START_X},${BEZIER_START_Y} Q ${BEZIER_CONTROL_X},${BEZIER_CONTROL_Y} ${BEZIER_END_X},${BEZIER_END_Y}`;
+  }, []);
 
-  // Generate hill curve using quadratic bezier
-  const getHillPath = () => {
-    const startX = padding;
-    const startY = padding + chartHeight;
-    const endX = padding + chartWidth;
-    const endY = padding + chartHeight;
-    const controlX = padding + chartWidth / 2;
-    const controlY = padding;
-
-    return `M ${startX},${startY} Q ${controlX},${controlY} ${endX},${endY}`;
-  };
-
-  // Convert position (0-100) to x,y coordinates on the hill
-  const positionToCoords = (position: number): { x: number; y: number } => {
+  // Convert position (0-100) to x,y coordinates on the hill (memoized)
+  const positionToCoords = useCallback((position: number): { x: number; y: number } => {
     const t = position / 100;
-    const startX = padding;
-    const startY = padding + chartHeight;
-    const endX = padding + chartWidth;
-    const endY = padding + chartHeight;
-    const controlX = padding + chartWidth / 2;
-    const controlY = padding;
 
     // Quadratic bezier formula: B(t) = (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
     const x =
-      Math.pow(1 - t, 2) * startX +
-      2 * (1 - t) * t * controlX +
-      Math.pow(t, 2) * endX;
+      Math.pow(1 - t, 2) * BEZIER_START_X +
+      2 * (1 - t) * t * BEZIER_CONTROL_X +
+      Math.pow(t, 2) * BEZIER_END_X;
     const y =
-      Math.pow(1 - t, 2) * startY +
-      2 * (1 - t) * t * controlY +
-      Math.pow(t, 2) * endY;
+      Math.pow(1 - t, 2) * BEZIER_START_Y +
+      2 * (1 - t) * t * BEZIER_CONTROL_Y +
+      Math.pow(t, 2) * BEZIER_END_Y;
 
     return { x, y };
-  };
+  }, []);
 
-  // Calculate positions with collision detection
-  const getPositionedItems = (): PositionedItem[] => {
+  // Calculate positions with collision detection (memoized for performance)
+  const positionedItems = useMemo((): PositionedItem[] => {
     // First, get base positions for all items
     const basePositions = items.map((item) => {
-      const coords = positionToCoords(item.position);
+      // Use drag position if this item is being dragged
+      const position = item.id === selectedId && dragPosition !== null ? dragPosition : item.position;
+      const coords = positionToCoords(position);
       return {
         ...item,
+        position, // Update position for display
         displayX: coords.x,
         displayY: coords.y,
         originalY: coords.y,
@@ -84,15 +88,19 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
 
     // Detect and resolve collisions using a smarter approach
     for (let i = 0; i < sorted.length; i++) {
-      const current = sorted[i]!;
+      const current = sorted[i];
+      if (!current) continue;
+
       const conflictingItems: PositionedItem[] = [];
 
       // Find all items that are too close
       for (let j = 0; j < i; j++) {
-        const other = sorted[j]!;
+        const other = sorted[j];
+        if (!other) continue;
+
         const distance = Math.abs(current.displayX - other.displayX);
 
-        if (distance < minDistance) {
+        if (distance < MIN_DISTANCE) {
           conflictingItems.push(other);
         }
       }
@@ -101,60 +109,64 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
       let maxStackLevel = 0;
       for (const conflicting of conflictingItems) {
         const conflictStackLevel = Math.round(
-          (conflicting.originalY - conflicting.displayY) / verticalSpacing,
+          (conflicting.originalY - conflicting.displayY) / VERTICAL_SPACING,
         );
         maxStackLevel = Math.max(maxStackLevel, conflictStackLevel + 1);
       }
 
       // Apply vertical offset if needed
       if (maxStackLevel > 0) {
-        current.displayY = current.originalY - maxStackLevel * verticalSpacing;
+        current.displayY = current.originalY - maxStackLevel * VERTICAL_SPACING;
       }
     }
 
     return sorted;
-  };
+  }, [items, selectedId, dragPosition, positionToCoords]);
 
-  const positionedItems = getPositionedItems();
-
-  // Convert SVG coordinates to position (0-100)
-  const coordsToPosition = (clientX: number): number => {
+  // Convert SVG coordinates to position (0-100) - memoized
+  const coordsToPosition = useCallback((clientX: number): number => {
     if (!svgRef.current) return 0;
 
     const rect = svgRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
-    const relativeX = Math.max(padding, Math.min(x, padding + chartWidth));
-    const position = ((relativeX - padding) / chartWidth) * 100;
+    const relativeX = Math.max(SVG_PADDING, Math.min(x, SVG_PADDING + CHART_WIDTH));
+    const position = ((relativeX - SVG_PADDING) / CHART_WIDTH) * 100;
 
     return Math.max(0, Math.min(100, position));
-  };
+  }, []);
 
-  const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleDotMouseDown = useCallback((e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    setSelectedId(id);
+    setDragPosition(null);
+  }, []);
+
+  // Memoized event handlers to prevent memory leaks
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!selectedId) return;
 
     const position = coordsToPosition(e.clientX);
-    onPositionChange(selectedId, position);
+    // Update visual position during drag (no API call)
+    setDragPosition(position);
+  }, [selectedId, coordsToPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    if (!selectedId) return;
+
+    // Call API only once when dragging finishes
+    if (dragPosition !== null) {
+      onPositionChange(selectedId, dragPosition);
+    }
+
+    // Always deselect after mouse up
     setSelectedId(null);
-  };
+    setDragPosition(null);
+  }, [selectedId, dragPosition, onPositionChange]);
 
-  const handleDotClick = (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
-    setSelectedId(id === selectedId ? null : id);
-  };
-
-  // Handle dragging
+  // Handle dragging - attach/detach event listeners
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!selectedId) return;
-
-      const position = coordsToPosition(e.clientX);
-      onPositionChange(selectedId, position);
-    };
-
-    const handleMouseUp = () => {
-      setSelectedId(null);
-    };
-
     if (selectedId) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
@@ -164,7 +176,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
         window.removeEventListener("mouseup", handleMouseUp);
       };
     }
-  }, [selectedId, onPositionChange]);
+  }, [selectedId, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="w-full max-w-4xl mx-auto my-8 p-6 bg-white rounded-xl shadow-md">
@@ -174,7 +186,9 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
             <span className="text-sm font-semibold text-gray-800 mb-1">
               Figuring things out
             </span>
-            <span className="text-xs text-gray-500">Uncertainty, exploring</span>
+            <span className="text-xs text-gray-500">
+              Uncertainty, exploring
+            </span>
           </div>
           <div className="flex flex-col text-center">
             <span className="text-sm font-semibold text-gray-800 mb-1">
@@ -187,22 +201,21 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
 
       <svg
         ref={svgRef}
-        width={width}
-        height={height}
-        onClick={handleClick}
-        className={`block mx-auto bg-gray-50 rounded-lg ${selectedId ? "cursor-crosshair" : ""}`}
+        width={SVG_WIDTH}
+        height={SVG_HEIGHT}
+        className="block mx-auto bg-gray-50 rounded-lg"
       >
         {/* Grid lines */}
         <g className="grid">
           {[0, 25, 50, 75, 100].map((percent) => {
-            const x = padding + (chartWidth * percent) / 100;
+            const x = SVG_PADDING + (CHART_WIDTH * percent) / 100;
             return (
               <line
                 key={percent}
                 x1={x}
-                y1={padding}
+                y1={SVG_PADDING}
                 x2={x}
-                y2={padding + chartHeight}
+                y2={SVG_PADDING + CHART_HEIGHT}
                 stroke="#e5e7eb"
                 strokeWidth="1"
                 strokeDasharray="4,4"
@@ -212,14 +225,14 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
         </g>
 
         {/* Hill curve */}
-        <path d={getHillPath()} fill="none" stroke="#3b82f6" strokeWidth="3" />
+        <path d={hillPath} fill="none" stroke="#3b82f6" strokeWidth="3" />
 
         {/* Center line */}
         <line
-          x1={padding + chartWidth / 2}
-          y1={padding}
-          x2={padding + chartWidth / 2}
-          y2={padding + chartHeight}
+          x1={SVG_PADDING + CHART_WIDTH / 2}
+          y1={SVG_PADDING}
+          x2={SVG_PADDING + CHART_WIDTH / 2}
+          y2={SVG_PADDING + CHART_HEIGHT}
           stroke="#94a3b8"
           strokeWidth="2"
           strokeDasharray="8,4"
@@ -230,6 +243,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
           const isSelected = item.id === selectedId;
           const isHovered = item.id === hoveredId;
           const isOffset = item.displayY !== item.originalY;
+          const isDragging = isSelected && dragPosition !== null;
 
           return (
             <g key={item.id}>
@@ -247,39 +261,40 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                 />
               )}
 
-              {/* Glow effect for selected/hovered */}
+              {/* Glow effect for selected/hovered - enhanced when dragging */}
               {(isSelected || isHovered) && (
                 <circle
                   cx={item.displayX}
                   cy={item.displayY}
-                  r="20"
-                  fill="#3b82f6"
-                  opacity="0.2"
+                  r={GLOW_RADIUS}
+                  fill={isDragging ? "#10b981" : "#3b82f6"}
+                  opacity={isDragging ? "0.3" : "0.2"}
+                  className={isDragging ? "animate-pulse" : ""}
                 />
               )}
 
-              {/* Main dot */}
+              {/* Main dot - change color when dragging */}
               <circle
                 cx={item.displayX}
                 cy={item.displayY}
-                r="8"
-                fill={isSelected ? "#2563eb" : "#3b82f6"}
-                stroke={isSelected ? "#1e40af" : "#fff"}
-                strokeWidth="2"
+                r={DOT_RADIUS}
+                fill={isDragging ? "#10b981" : isSelected ? "#2563eb" : "#3b82f6"}
+                stroke={isDragging ? "#059669" : isSelected ? "#1e40af" : "#fff"}
+                strokeWidth={isDragging ? "3" : "2"}
                 className="hill-dot"
-                onMouseDown={(e) => handleDotClick(e, item.id)}
+                onMouseDown={(e) => handleDotMouseDown(e, item.id)}
                 onMouseEnter={() => setHoveredId(item.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
               />
 
               {/* Label */}
               <text
                 x={item.displayX}
-                y={item.displayY - 15}
+                y={item.displayY - LABEL_OFFSET}
                 textAnchor="middle"
                 fontSize="12"
-                fill="#1f2937"
+                fill={isDragging ? "#059669" : "#1f2937"}
                 fontWeight={isSelected || isHovered ? "600" : "400"}
                 pointerEvents="none"
               >
@@ -290,10 +305,11 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
               {(isSelected || isHovered) && (
                 <text
                   x={item.displayX}
-                  y={item.displayY + 25}
+                  y={item.displayY + POSITION_INDICATOR_OFFSET}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#6b7280"
+                  fill={isDragging ? "#059669" : "#6b7280"}
+                  fontWeight={isDragging ? "600" : "400"}
                   pointerEvents="none"
                 >
                   {Math.round(item.position)}%
@@ -304,9 +320,9 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
         })}
       </svg>
 
-      {selectedId && (
-        <div className="mt-4 px-3 py-2 bg-blue-50 text-blue-800 rounded-md text-center text-sm font-medium animate-fade-in">
-          Click anywhere on the hill to move the selected item
+      {dragPosition !== null && (
+        <div className="mt-4 px-3 py-2 bg-green-50 text-green-800 rounded-md text-center text-sm font-medium animate-fade-in">
+          Release to place the item at this position
         </div>
       )}
     </div>

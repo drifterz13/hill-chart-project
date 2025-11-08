@@ -1,5 +1,5 @@
 import { useState } from "react";
-import TodoItem from "./TodoItem";
+import TaskItem from "./TaskItem";
 import FilterDropdown from "./FilterDropdown";
 
 type Avatar = {
@@ -8,7 +8,7 @@ type Avatar = {
   alt: string;
 };
 
-export type Todo = {
+export type Task = {
   id: number;
   title: string;
   completed: boolean;
@@ -16,55 +16,55 @@ export type Todo = {
   assignees?: Avatar[];
 };
 
-type TodoListProps = {
-  todos: Todo[];
-  onToggleTodo?: (id: number, completed: boolean) => void;
-  onClickTodo?: (id: number) => void;
+type TaskListProps = {
+  tasks: Task[];
+  onToggleTask?: (id: number, completed: boolean) => void;
+  onClickTask?: (id: number) => void;
   showFilters?: boolean;
 };
 
-export default function TodoList({
-  todos,
-  onToggleTodo,
-  onClickTodo,
+export default function TaskList({
+  tasks,
+  onToggleTask,
+  onClickTask,
   showFilters = true,
-}: TodoListProps) {
+}: TaskListProps) {
   const [assigneeFilter, setAssigneeFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
 
   // Extract unique assignees for filter
   const allAssignees = Array.from(
     new Set(
-      todos.flatMap((todo) =>
-        (todo.assignees || []).map((a) => a.alt || `User ${a.id}`)
+      tasks.flatMap((task) =>
+        (task.assignees || []).map((a) => a.alt || `User ${a.id}`)
       )
     )
   );
 
-  // Filter and sort todos
-  let filteredTodos = [...todos];
+  // Filter and sort tasks
+  let filteredTasks = [...tasks];
 
   if (assigneeFilter) {
-    filteredTodos = filteredTodos.filter((todo) =>
-      (todo.assignees || []).some((a) => a.alt === assigneeFilter)
+    filteredTasks = filteredTasks.filter((task) =>
+      (task.assignees || []).some((a) => a.alt === assigneeFilter)
     );
   }
 
   if (sortBy === "Sort by Due Date") {
-    filteredTodos.sort((a, b) => {
+    filteredTasks.sort((a, b) => {
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     });
   } else if (sortBy === "Sort by Name") {
-    filteredTodos.sort((a, b) => a.title.localeCompare(b.title));
+    filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
   }
 
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <h2 className="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
-          To-Do List
+          Task List
         </h2>
         {showFilters && (
           <div className="flex items-center gap-2">
@@ -84,17 +84,17 @@ export default function TodoList({
         )}
       </div>
       <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        {filteredTodos.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-            No todos found
+            No tasks found
           </div>
         ) : (
-          filteredTodos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              {...todo}
-              onToggle={onToggleTodo}
-              onClick={onClickTodo}
+          filteredTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              {...task}
+              onToggle={onToggleTask}
+              onClick={onClickTask}
             />
           ))
         )}

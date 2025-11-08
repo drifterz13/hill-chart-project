@@ -38,7 +38,8 @@ const tasks = featureIds.flatMap((featureId: number) => {
 });
 
 console.log("Seeding tasks...");
-await sql`insert into tasks ${sql(tasks)}`;
+const insertedTaskIds = await sql`insert into tasks ${sql(tasks)} returning id`;
+const taskIds = insertedTaskIds.map((t: { id: number }) => t.id);
 
 const avatarImages = await readdir(resolve("public", "images"));
 
@@ -82,19 +83,24 @@ const assigneeIds = insertedAssigneeIds.map((a: { id: number }) => a.id);
 const featureAssignees = featureIds.flatMap((featureId: number) => {
   const numAssignees = Math.random() < 0.5 ? 1 : 2;
   const randomAssigneeIds = randNth(assigneeIds, numAssignees);
-  console.debug(
-    `Random assignees for feature ${featureId}:`,
-    randomAssigneeIds,
-  );
-
   return randomAssigneeIds.map((assigneeId: number) => ({
     feature_id: featureId,
     assignee_id: assigneeId,
   }));
 });
-
 console.log("Seeding feature assignees...");
 await sql`insert into feature_assignees ${sql(featureAssignees)}`;
+
+const taskAssignees = taskIds.flatMap((taskId: number) => {
+  const numAssignees = Math.random() < 0.5 ? 1 : 2;
+  const randomAssigneeIds = randNth(assigneeIds, numAssignees);
+  return randomAssigneeIds.map((assigneeId: number) => ({
+    task_id: taskId,
+    assignee_id: assigneeId,
+  }));
+});
+console.log("Seeding task assignees...");
+await sql`insert into task_assignees ${sql(taskAssignees)}`;
 
 const featureProgressions = featureIds.map((featureId: number) => ({
   feature_id: featureId,

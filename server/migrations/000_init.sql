@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
+    position INTEGER DEFAULT 0 CHECK (position >= 0 AND position <= 100),
+    due_date TIMESTAMP,
     feature_id INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,5 +53,13 @@ CREATE TABLE IF NOT EXISTS feature_assignees (
     assignee_id INTEGER NOT NULL,
     PRIMARY KEY (feature_id, assignee_id),
     FOREIGN KEY (feature_id) REFERENCES features(id) ON DELETE CASCADE,
+    FOREIGN KEY (assignee_id) REFERENCES assignees(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS task_assignees (
+    task_id INTEGER NOT NULL,
+    assignee_id INTEGER NOT NULL,
+    PRIMARY KEY (task_id, assignee_id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
     FOREIGN KEY (assignee_id) REFERENCES assignees(id) ON DELETE CASCADE
 );
