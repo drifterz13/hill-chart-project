@@ -3,15 +3,16 @@ import { sql } from "bun";
 export class FeatureService {
   static async getFeatures() {
     const values = await sql`
-            select 
-              f.id, f.name, f.description, f.status, f.due_date, f.created_at, 
-              fp.stage, fp.percentage, a.username, a.avatar_url
-            from features f
-            left join feature_assignees fa on f.id = fa.feature_id
-            left join assignees a on fa.assignee_id = a.id
-            left join feature_progression fp on f.id = fp.feature_id
-            order by f.created_at desc;
-          `.values();
+        select distinct
+          f.id, f.name, f.description, f.status, f.due_date, f.created_at,
+          fp.stage, fp.percentage, a.username, a.avatar_url
+        from features f
+        left join tasks t on f.id = t.feature_id
+        left join task_assignees ta on t.id = ta.task_id
+        left join assignees a on ta.assignee_id = a.id
+        left join feature_progression fp on f.id = fp.feature_id
+        order by f.created_at desc;
+      `.values();
 
     const data = values.reduce((acc: any, row: any[]) => {
       const featureId = row[0];
@@ -54,12 +55,13 @@ export class FeatureService {
 
   static async getFeature(featureId: number) {
     const values = await sql`
-      SELECT
+      SELECT DISTINCT
         f.id, f.name, f.description, f.status, f.due_date, f.created_at,
         fp.stage, fp.percentage, a.id as assignee_id, a.username, a.avatar_url
       FROM features f
-      LEFT JOIN feature_assignees fa ON f.id = fa.feature_id
-      LEFT JOIN assignees a ON fa.assignee_id = a.id
+      LEFT JOIN tasks t ON f.id = t.feature_id
+      LEFT JOIN task_assignees ta ON t.id = ta.task_id
+      LEFT JOIN assignees a ON ta.assignee_id = a.id
       LEFT JOIN feature_progression fp ON f.id = fp.feature_id
       WHERE f.id = ${featureId}
     `.values();
@@ -79,8 +81,8 @@ export class FeatureService {
       stage: values[0][6],
       percentage: values[0][7],
       assignees: values
-        .filter((row) => row[8] !== null)
-        .map((row) => ({
+        .filter((row: any[]) => row[8] !== null)
+        .map((row: any[]) => ({
           id: row[8],
           username: row[9],
           avatarUrl: row[10],
@@ -109,7 +111,7 @@ export class FeatureService {
     return await sql.begin(async (sql) => {
       // Insert feature
       const [featureResult] = await sql`
-        INSERT INTO features ${sql(feature, "name", "description", "due_date")}
+        INSERT INTO features ${sql(feature, "name", "description", "dueDate")}
         RETURNING id
       `.values();
 

@@ -48,14 +48,6 @@ CREATE TABLE IF NOT EXISTS feature_progression (
   FOREIGN KEY (feature_id) REFERENCES features(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS feature_assignees (
-    feature_id INTEGER NOT NULL,
-    assignee_id INTEGER NOT NULL,
-    PRIMARY KEY (feature_id, assignee_id),
-    FOREIGN KEY (feature_id) REFERENCES features(id) ON DELETE CASCADE,
-    FOREIGN KEY (assignee_id) REFERENCES assignees(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS task_assignees (
     task_id INTEGER NOT NULL,
     assignee_id INTEGER NOT NULL,

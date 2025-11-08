@@ -80,16 +80,7 @@ const insertedAssigneeIds =
 
 const assigneeIds = insertedAssigneeIds.map((a: { id: number }) => a.id);
 
-const featureAssignees = featureIds.flatMap((featureId: number) => {
-  const numAssignees = Math.random() < 0.5 ? 1 : 2;
-  const randomAssigneeIds = randNth(assigneeIds, numAssignees);
-  return randomAssigneeIds.map((assigneeId: number) => ({
-    feature_id: featureId,
-    assignee_id: assigneeId,
-  }));
-});
-console.log("Seeding feature assignees...");
-await sql`insert into feature_assignees ${sql(featureAssignees)}`;
+
 
 const taskAssignees = taskIds.flatMap((taskId: number) => {
   const numAssignees = Math.random() < 0.5 ? 1 : 2;

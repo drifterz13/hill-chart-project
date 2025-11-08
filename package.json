@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot server/index.ts",
-    "db:migrate:gen": "bun run server/scripts/gen-migration.ts",
+    "db:gen": "bun run server/scripts/gen-migration.ts",
     "db:migrate": "bun run server/scripts/migrate.ts",
     "db:drop": "bun run server/scripts/drop-db.ts",
     "db:seed": "bun run server/scripts/seed.ts",

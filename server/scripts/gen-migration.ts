@@ -17,4 +17,4 @@ if (!values.name) {
   process.exit(1);
 }
 
-await $`touch migrations/${Date.now()}_${values.name.split(" ").join("_")}.sql`;
+await $`touch server/migrations/${Date.now()}_${values.name.split(" ").join("_")}.sql`;
