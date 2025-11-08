@@ -113,6 +113,7 @@ export default function FeatureProgressPage() {
                 title={feature?.name ?? "Loading..."}
                 onAddClick={handleAddTask}
                 addButtonText="Add Task"
+                onNavigateBack={() => navigate("/")}
               />
 
               <main className="flex flex-col p-6 space-y-8">

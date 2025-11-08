@@ -37,7 +37,7 @@ const BEZIER_START_Y = SVG_PADDING + CHART_HEIGHT;
 const BEZIER_END_X = SVG_PADDING + CHART_WIDTH;
 const BEZIER_END_Y = SVG_PADDING + CHART_HEIGHT;
 const BEZIER_CONTROL_X = SVG_PADDING + CHART_WIDTH / 2;
-const BEZIER_CONTROL_Y = SVG_PADDING;
+const BEZIER_CONTROL_Y = SVG_PADDING - CHART_HEIGHT * 0.3;
 
 export default function HillChart({ items, onPositionChange }: HillChartProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
