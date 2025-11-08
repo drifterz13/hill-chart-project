@@ -17,7 +17,6 @@ export class TaskService {
     // Aggregate rows into tasks with assignees array
     const data = values.reduce((acc: any, row: any[]) => {
       const taskId = row[0];
-
       if (!acc[taskId]) {
         acc[taskId] = {
           id: row[0],

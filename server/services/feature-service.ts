@@ -26,21 +26,25 @@ export class FeatureService {
           cretedAt: row[5],
           stage: row[6],
           percentage: row[7],
-          assignees: [
-            {
-              username: row[8],
-              avatarUrl: row[9],
-            },
-          ],
+          assignees: row[8]
+            ? [
+                {
+                  username: row[8],
+                  avatarUrl: row[9],
+                },
+              ]
+            : [],
         };
 
         return acc;
       }
 
-      acc[featureId].assignees.push({
-        username: row[8],
-        avatarUrl: row[9],
-      });
+      if (row[8]) {
+        acc[featureId].assignees.push({
+          username: row[8],
+          avatarUrl: row[9],
+        });
+      }
 
       return acc;
     }, {});
