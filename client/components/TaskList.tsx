@@ -63,7 +63,7 @@ export default function TaskList({
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <h2 className="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+        <h2 className="text-base-content text-[22px] font-bold leading-tight tracking-[-0.015em]">
           Task List
         </h2>
         {showFilters && (
@@ -83,9 +83,9 @@ export default function TaskList({
           </div>
         )}
       </div>
-      <div className="flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="flex flex-col border border-base-200 rounded-lg overflow-hidden">
         {filteredTasks.length === 0 ? (
-          <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-8 text-center text-base-content/60">
             No tasks found
           </div>
         ) : (

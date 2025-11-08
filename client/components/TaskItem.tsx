@@ -28,43 +28,43 @@ export default function TaskItem({
 }: TaskItemProps) {
   const getDueDateStyle = () => {
     if (completed) {
-      return "text-green-600 bg-green-100 dark:text-green-300 dark:bg-green-900/50";
+      return "text-success bg-success/10";
     }
 
     if (!dueDate) {
-      return "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700";
+      return "text-base-content/60 bg-base-200";
     }
 
     // Check if overdue (simple date comparison)
     const today = new Date();
     const due = new Date(dueDate);
     if (due < today && !completed) {
-      return "text-orange-600 bg-orange-100 dark:text-orange-300 dark:bg-orange-900/50 font-medium";
+      return "text-warning bg-warning/10 font-medium";
     }
 
-    return "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700";
+    return "text-base-content/60 bg-base-200";
   };
 
   return (
     <div
-      className={`flex items-center gap-4 px-4 py-3 border-b last:border-b-0 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+      className={`flex items-center gap-4 px-4 py-3 border-b last:border-b-0 border-base-200 hover:bg-base-200 transition-colors ${
         completed
-          ? "bg-gray-50 dark:bg-gray-800/30"
-          : "bg-white dark:bg-gray-800/50"
+          ? "bg-base-200/50"
+          : "bg-base-100"
       }`}
     >
       <input
         type="checkbox"
         checked={completed}
         onChange={(e) => onToggle?.(id, e.target.checked)}
-        className="h-5 w-5 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+        className="checkbox checkbox-primary"
       />
       <span
         onClick={() => onClick?.(id)}
         className={`flex-1 font-medium cursor-pointer ${
           completed
-            ? "text-gray-500 dark:text-gray-500 line-through"
-            : "text-gray-800 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
+            ? "text-base-content/50 line-through"
+            : "text-base-content hover:text-primary"
         }`}
       >
         {title}

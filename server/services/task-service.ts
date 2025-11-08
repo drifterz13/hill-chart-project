@@ -72,9 +72,6 @@ export class TaskService {
 
       const taskId = result[0];
 
-      console.log("Created task with ID:", taskId);
-      console.log("Assignee IDs:", task.assigneeIds);
-
       if (task.assigneeIds && task.assigneeIds.length > 0) {
         const taskAssignees = task.assigneeIds.map((assigneeId) => ({
           task_id: taskId,

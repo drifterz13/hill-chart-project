@@ -67,16 +67,16 @@ export default function FeatureCard({
 
   return (
     <div
-      className="flex flex-col gap-4 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
+      className="flex flex-col gap-4 p-5 rounded-xl bg-base-100 border border-base-200 hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer"
       onClick={() => onClick?.(id)}
     >
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <p className="text-gray-900 dark:text-gray-100 text-base font-semibold leading-normal mb-1">
+          <p className="text-base-content text-base font-semibold leading-normal mb-1">
             {title}
           </p>
-          <p className="text-gray-600 dark:text-gray-400 text-sm font-normal">
+          <p className="text-base-content/60 text-sm font-normal">
             {description}
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function FeatureCard({
             e.stopPropagation();
             onMenuClick?.(id);
           }}
-          className="text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+          className="text-base-content/60 hover:text-primary transition-colors"
         >
           <MoreHorizontal size={20} />
         </button>
@@ -95,23 +95,23 @@ export default function FeatureCard({
       {stageInfo ? (
         <div className="flex items-center gap-2">
           <SignalHigh size={20} className={stageInfo.color} />
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
+          <p className="text-base-content/60 text-sm">
             {stageInfo.label}
           </p>
         </div>
       ) : progress !== undefined ? (
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <span className="text-sm font-medium text-base-content/60">
               Progress
             </span>
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <span className="text-sm font-medium text-base-content/60">
               {progress}%
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+          <div className="w-full bg-base-200 rounded-full h-1.5">
             <div
-              className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+              className="bg-success h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -126,7 +126,7 @@ export default function FeatureCard({
           <div />
         )}
         {dueDateInfo && (
-          <p className="text-gray-600 dark:text-gray-400 text-xs">
+          <p className="text-base-content/60 text-xs">
             {dueDateInfo}
           </p>
         )}

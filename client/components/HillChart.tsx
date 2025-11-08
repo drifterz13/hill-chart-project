@@ -179,22 +179,22 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
   }, [selectedId, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-8 p-6 bg-white rounded-xl shadow-md">
+    <div className="w-full max-w-4xl mx-auto my-8 p-6 bg-base-100 rounded-xl shadow-md">
       <div className="mb-4">
         <div className="flex justify-between px-[60px]">
           <div className="flex flex-col text-center">
-            <span className="text-sm font-semibold text-gray-800 mb-1">
+            <span className="text-sm font-semibold text-base-content mb-1">
               Figuring things out
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-base-content/60">
               Uncertainty, exploring
             </span>
           </div>
           <div className="flex flex-col text-center">
-            <span className="text-sm font-semibold text-gray-800 mb-1">
+            <span className="text-sm font-semibold text-base-content mb-1">
               Making it happen
             </span>
-            <span className="text-xs text-gray-500">Confidence, shipping</span>
+            <span className="text-xs text-base-content/60">Confidence, shipping</span>
           </div>
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
         ref={svgRef}
         width={SVG_WIDTH}
         height={SVG_HEIGHT}
-        className="block mx-auto bg-gray-50 rounded-lg"
+        className="block mx-auto bg-base-100 rounded-lg"
       >
         {/* Grid lines */}
         <g className="grid">
@@ -216,7 +216,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                 y1={SVG_PADDING}
                 x2={x}
                 y2={SVG_PADDING + CHART_HEIGHT}
-                stroke="#e5e7eb"
+                stroke="var(--color-base-200)"
                 strokeWidth="1"
                 strokeDasharray="4,4"
               />
@@ -225,7 +225,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
         </g>
 
         {/* Hill curve */}
-        <path d={hillPath} fill="none" stroke="#3b82f6" strokeWidth="3" />
+        <path d={hillPath} fill="none" stroke="var(--color-primary)" strokeWidth="3" />
 
         {/* Center line */}
         <line
@@ -233,7 +233,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
           y1={SVG_PADDING}
           x2={SVG_PADDING + CHART_WIDTH / 2}
           y2={SVG_PADDING + CHART_HEIGHT}
-          stroke="#94a3b8"
+          stroke="var(--color-neutral)"
           strokeWidth="2"
           strokeDasharray="8,4"
         />
@@ -254,7 +254,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                   y1={item.displayY}
                   x2={item.displayX}
                   y2={item.originalY}
-                  stroke="#94a3b8"
+                   stroke="var(--color-neutral)"
                   strokeWidth="1.5"
                   strokeDasharray="3,3"
                   opacity="0.6"
@@ -267,7 +267,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                   cx={item.displayX}
                   cy={item.displayY}
                   r={GLOW_RADIUS}
-                  fill={isDragging ? "#10b981" : "#3b82f6"}
+                   fill={isDragging ? "var(--color-accent)" : "var(--color-neutral)"}
                   opacity={isDragging ? "0.3" : "0.2"}
                   className={isDragging ? "animate-pulse" : ""}
                 />
@@ -278,8 +278,8 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                 cx={item.displayX}
                 cy={item.displayY}
                 r={DOT_RADIUS}
-                fill={isDragging ? "#10b981" : isSelected ? "#2563eb" : "#3b82f6"}
-                stroke={isDragging ? "#059669" : isSelected ? "#1e40af" : "#fff"}
+                 fill={isDragging ? "var(--color-accent)" : isSelected ? "var(--color-neutral)" : "var(--color-neutral)"}
+                 stroke={isDragging ? "var(--color-accent)" : isSelected ? "var(--color-neutral)" : "var(--color-base-100)"}
                 strokeWidth={isDragging ? "3" : "2"}
                 className="hill-dot"
                 onMouseDown={(e) => handleDotMouseDown(e, item.id)}
@@ -294,7 +294,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                 y={item.displayY - LABEL_OFFSET}
                 textAnchor="middle"
                 fontSize="12"
-                fill={isDragging ? "#059669" : "#1f2937"}
+                 fill={isDragging ? "var(--color-accent)" : "var(--color-base-content)"}
                 fontWeight={isSelected || isHovered ? "600" : "400"}
                 pointerEvents="none"
               >
@@ -308,7 +308,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
                   y={item.displayY + POSITION_INDICATOR_OFFSET}
                   textAnchor="middle"
                   fontSize="10"
-                  fill={isDragging ? "#059669" : "#6b7280"}
+                   fill={isDragging ? "var(--color-accent)" : "var(--color-neutral-content)"}
                   fontWeight={isDragging ? "600" : "400"}
                   pointerEvents="none"
                 >
@@ -321,7 +321,7 @@ export default function HillChart({ items, onPositionChange }: HillChartProps) {
       </svg>
 
       {dragPosition !== null && (
-        <div className="mt-4 px-3 py-2 bg-green-50 text-green-800 rounded-md text-center text-sm font-medium animate-fade-in">
+        <div className="mt-4 px-3 py-2 bg-accent/10 text-accent rounded-md text-center text-sm font-medium animate-fade-in">
           Release to place the item at this position
         </div>
       )}

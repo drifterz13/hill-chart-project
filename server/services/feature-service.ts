@@ -93,49 +93,63 @@ export class FeatureService {
   }
 
   static async createFeature(feature: any) {
-    await sql`
-          INSERT INTO features ${sql(feature, "name", "description", "due_date")}
-        `;
+    await sql`INSERT INTO features ${sql(feature, "name", "description", "due_date")}`;
   }
 
   static async createFeatureWithTasks(feature: {
     name: string;
     description?: string;
-    dueDate?: string;
     tasks?: Array<{
       title: string;
       dueDate?: string;
       assigneeIds?: number[];
     }>;
   }) {
+    const featureValue = {
+      name: feature.name,
+      description: feature.description || null,
+    };
     return await sql.begin(async (sql) => {
-      // Insert feature
       const [featureResult] = await sql`
-        INSERT INTO features ${sql(feature, "name", "description", "dueDate")}
+        INSERT INTO features ${sql(featureValue, "name", "description")}
         RETURNING id
       `.values();
 
       const featureId = featureResult[0];
 
-      // Insert tasks if provided
       if (feature.tasks && feature.tasks.length > 0) {
-        for (const task of feature.tasks) {
-          const [taskResult] = await sql`
-            INSERT INTO tasks (title, feature_id, due_date)
-            VALUES (${task.title}, ${featureId}, ${task.dueDate || null})
-            RETURNING id
-          `.values();
+        const tasksValue = (feature.tasks || []).map((task) => ({
+          title: task.title,
+          feature_id: featureId,
+          due_date: task.dueDate || null,
+        }));
 
-          const taskId = taskResult[0];
+        const [tasksResult] =
+          await sql`insert into tasks ${sql(tasksValue)} returning id`.values();
 
-          // Insert task assignees if provided
-          if (task.assigneeIds && task.assigneeIds.length > 0) {
-            for (const assigneeId of task.assigneeIds) {
-              await sql`
-                INSERT INTO task_assignees (task_id, assignee_id)
-                VALUES (${taskId}, ${assigneeId})
-              `;
-            }
+        const taskAssigneeIds = feature.tasks.map(
+          (task) => task.assigneeIds || [],
+        );
+
+        if (tasksResult.length > 0) {
+          const taskAssignees = tasksResult.flatMap(
+            (taskRow: any[], index: number) => {
+              const taskId = taskRow[0];
+              const assigneeIds = taskAssigneeIds[index] || [];
+
+              if (assigneeIds.length === 0) {
+                return [];
+              }
+
+              return assigneeIds.map((assigneeId) => ({
+                task_id: taskId,
+                assignee_id: assigneeId,
+              }));
+            },
+          );
+
+          if (taskAssignees.length > 0) {
+            await sql`insert into task_assignees ${sql(taskAssignees)}`;
           }
         }
       }

@@ -49,22 +49,22 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-gray-900/60 dark:bg-gray-900/80"
+        className="fixed inset-0 bg-base-content/60"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
-        className={`relative z-50 flex w-full ${maxWidthClasses[maxWidth]} flex-col rounded-xl bg-white dark:bg-gray-900 shadow-2xl`}
+        className={`relative z-50 flex w-full ${maxWidthClasses[maxWidth]} flex-col rounded-xl bg-base-100 shadow-2xl`}
       >
         <div className="flex flex-col p-8 gap-6">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-slate-900 dark:text-slate-50 text-[24px] font-bold leading-tight">
+            <h2 className="text-base-content text-[24px] font-bold leading-tight">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              className="text-base-content/60 hover:text-base-content transition-colors"
               aria-label="Close modal"
             >
               <X size={24} />

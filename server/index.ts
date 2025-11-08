@@ -18,7 +18,6 @@ const server = Bun.serve({
         const featureId = await FeatureService.createFeatureWithTasks({
           name: body.name,
           description: body.description,
-          dueDate: body.dueDate,
           tasks: body.tasks,
         });
         return Response.json({ id: featureId }, { status: 201 });

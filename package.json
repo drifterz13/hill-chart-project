@@ -12,7 +12,8 @@
     "db:reset": "bun db:drop && bun db:migrate && bun db:seed"
   },
   "devDependencies": {
-    "@types/react-dom": "^19.2.2"
+    "@types/react-dom": "^19.2.2",
+    "daisyui": "^5.4.7"
   },
   "peerDependencies": {
     "typescript": "^5"

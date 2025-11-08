@@ -72,14 +72,14 @@ export default function AddTaskModal({
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* Task Name */}
         <label className="flex flex-col min-w-40 flex-1">
-          <p className="text-slate-800 dark:text-slate-300 text-base font-medium leading-normal pb-2">
+          <p className="text-base-content text-base font-medium leading-normal pb-2">
             Task Name
           </p>
           <input
             type="text"
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
-            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-200 focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:border-blue-500 dark:focus:border-blue-500 h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 py-3 text-base font-normal leading-normal"
+            className="input input-bordered w-full h-12"
             placeholder="e.g., Design the new dashboard"
             required
           />
@@ -87,27 +87,27 @@ export default function AddTaskModal({
 
         {/* Assign to */}
         <div className="flex flex-col min-w-40 flex-1">
-          <p className="text-slate-800 dark:text-slate-300 text-base font-medium leading-normal pb-2">
+          <p className="text-base-content text-base font-medium leading-normal pb-2">
             Assign to
           </p>
-          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-3">
+          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto rounded-lg border border-base-200 bg-base-100 p-3">
             {assignees.length === 0 ? (
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
+              <p className="text-base-content/60 text-sm">
                 Loading assignees...
               </p>
             ) : (
               assignees.map((assignee) => (
                 <label
                   key={assignee.id}
-                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded"
+                  className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
                 >
                   <input
                     type="checkbox"
                     checked={selectedAssigneeIds.includes(assignee.id)}
                     onChange={() => handleAssigneeChange(assignee.id)}
-                    className="w-4 h-4 text-blue-500 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 focus:ring-2"
+                    className="checkbox checkbox-primary"
                   />
-                  <span className="text-slate-900 dark:text-slate-200 text-sm">
+                  <span className="text-base-content text-sm">
                     {assignee.username}
                   </span>
                 </label>
@@ -118,14 +118,14 @@ export default function AddTaskModal({
 
         {/* Due Date */}
         <label className="flex flex-col min-w-40 flex-1">
-          <p className="text-slate-800 dark:text-slate-300 text-base font-medium leading-normal pb-2">
+          <p className="text-base-content text-base font-medium leading-normal pb-2">
             Due Date
           </p>
           <input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-200 focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 focus:border-blue-500 dark:focus:border-blue-500 h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 py-3 text-base font-normal leading-normal"
+            className="input input-bordered w-full h-12"
             placeholder="Select a date"
           />
         </label>
@@ -135,13 +135,13 @@ export default function AddTaskModal({
           <button
             type="button"
             onClick={handleCancel}
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-base font-bold leading-normal tracking-[0.015em] transition-colors"
+            className="btn btn-outline min-w-[84px] h-11 px-5 text-base font-bold"
           >
             <span className="truncate">Cancel</span>
           </button>
           <button
             type="submit"
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-blue-500 hover:bg-blue-600 text-slate-50 text-base font-bold leading-normal tracking-[0.015em] transition-colors"
+            className="btn btn-primary min-w-[84px] h-11 px-5 text-base font-bold"
           >
             <span className="truncate">Add Task</span>
           </button>

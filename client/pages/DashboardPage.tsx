@@ -42,7 +42,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen w-full bg-base-100">
       {/* Sidebar */}
       <Sidebar />
 
@@ -55,12 +55,12 @@ export default function DashboardPage() {
         <div className="flex-1 p-10">
           {/* Page Heading */}
           <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-            <h2 className="text-gray-900 dark:text-gray-100 text-3xl font-bold tracking-tight">
+            <h2 className="text-base-content text-3xl font-bold tracking-tight">
               All Features
             </h2>
             <button
               onClick={handleAddFeature}
-              className="flex min-w-[84px] items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-blue-500 text-white text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors"
+              className="btn btn-primary min-w-[84px] h-10 px-4 text-sm font-bold"
             >
               <Plus size={20} />
               <span className="truncate">Add New Feature</span>
@@ -69,29 +69,23 @@ export default function DashboardPage() {
 
           {/* Filter Chips */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-            <button className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 hover:border-blue-500/50 transition-colors">
-              <p className="text-gray-900 dark:text-gray-100 text-sm font-medium">
+            <button className="btn btn-outline h-8 px-3">
+              <p className="text-sm font-medium">
                 Sort: Last Updated
               </p>
-              <ChevronDown
-                size={16}
-                className="text-gray-600 dark:text-gray-400"
-              />
+              <ChevronDown size={16} />
             </button>
-            <button className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-blue-500/20 border border-blue-500/50 px-3">
-              <p className="text-blue-500 text-sm font-medium">
+            <button className="btn btn-primary btn-outline h-8 px-3">
+              <p className="text-sm font-medium">
                 Status: Active
               </p>
-              <ChevronDown size={16} className="text-blue-500" />
+              <ChevronDown size={16} />
             </button>
-            <button className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 hover:border-blue-500/50 transition-colors">
-              <p className="text-gray-900 dark:text-gray-100 text-sm font-medium">
+            <button className="btn btn-outline h-8 px-3">
+              <p className="text-sm font-medium">
                 Filter: Archived
               </p>
-              <ChevronDown
-                size={16}
-                className="text-gray-600 dark:text-gray-400"
-              />
+              <ChevronDown size={16} />
             </button>
           </div>
 
