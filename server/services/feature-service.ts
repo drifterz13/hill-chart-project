@@ -132,24 +132,26 @@ export class FeatureService {
         const [taskIdRows] =
           await sql`insert into tasks ${sql(tasksValue)} returning id`;
 
-        const taskAssigneeIds = feature.tasks.map(
-          (task) => task.assigneeIds || [],
-        );
+        if (taskIdRows && taskIdRows.length === 0) {
+          const taskAssigneeIds = feature.tasks.map(
+            (task) => task.assigneeIds || [],
+          );
 
-        const taskAssignees = taskIdRows.flatMap(
-          (taskIdRow: any, index: number) => {
-            const taskId = taskIdRow.id;
-            const assigneeIds = taskAssigneeIds[index] || [];
+          const taskAssignees = taskIdRows.flatMap(
+            (taskIdRow: any, index: number) => {
+              const taskId = taskIdRow.id;
+              const assigneeIds = taskAssigneeIds[index] || [];
 
-            return assigneeIds.map((assigneeId) => ({
-              task_id: taskId,
-              assignee_id: assigneeId,
-            }));
-          },
-        );
+              return assigneeIds.map((assigneeId) => ({
+                task_id: taskId,
+                assignee_id: assigneeId,
+              }));
+            },
+          );
 
-        if (taskAssignees.length > 0) {
-          await sql`insert into task_assignees ${sql(taskAssignees)}`;
+          if (taskAssignees.length > 0) {
+            await sql`insert into task_assignees ${sql(taskAssignees)}`;
+          }
         }
       }
 
