@@ -12,26 +12,24 @@ export class TaskService {
       LEFT JOIN assignees a ON ta.assignee_id = a.id
       WHERE t.feature_id = ${featureId}
       ORDER BY t.created_at DESC
-    `.values();
+    `;
 
-    // Aggregate rows into tasks with assignees array
-    const data = values.reduce((acc: any, row: any[]) => {
-      const taskId = row[0];
-      if (!acc[taskId]) {
-        acc[taskId] = {
-          id: row[0],
-          title: row[1],
-          completed: row[2],
-          position: row[3],
-          dueDate: row[4],
-          createdAt: row[5],
-          updatedAt: row[6],
-          assignees: row[7]
+    const data = values.reduce((acc: any, row: any) => {
+      if (!acc[row.id]) {
+        acc[row.id] = {
+          id: row.id,
+          title: row.title,
+          completed: row.completed,
+          position: row.position,
+          dueDate: row.due_date,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          assignees: row.assignee_id
             ? [
                 {
-                  id: row[7],
-                  username: row[8],
-                  avatarUrl: row[9],
+                  id: row.assignee_id,
+                  username: row.username,
+                  avatarUrl: row.avatar_url,
                 },
               ]
             : [],
@@ -39,15 +37,14 @@ export class TaskService {
         return acc;
       }
 
-      if (row[7]) {
-        acc[taskId].assignees.push({
-          id: row[7],
-          username: row[8],
-          avatarUrl: row[9],
+      if (row.assignee_id) {
+        acc[row.id].assignees.push({
+          id: row.assignee_id,
+          username: row.username,
+          avatarUrl: row.avatar_url,
         });
+        return acc;
       }
-
-      return acc;
     }, {});
 
     return Object.values(data);
@@ -65,12 +62,11 @@ export class TaskService {
       due_date: task.dueDate || null,
     };
     return await sql.begin(async (sql) => {
-      const [result] = await sql`
+      const values = await sql`
         INSERT INTO tasks ${sql(taskValue, "title", "feature_id", "due_date")}
         RETURNING id
-      `.values();
-
-      const taskId = result[0];
+      `;
+      const taskId = values[0].id;
 
       if (task.assigneeIds && task.assigneeIds.length > 0) {
         const taskAssignees = task.assigneeIds.map((assigneeId) => ({
@@ -133,13 +129,13 @@ export class TaskService {
       SELECT id, username, avatar_url, created_at
       FROM assignees
       ORDER BY username ASC
-    `.values();
+    `;
 
     return values.map((row: any) => ({
-      id: row[0],
-      username: row[1],
-      avatarUrl: row[2],
-      createdAt: row[3],
+      id: row.id,
+      username: row.username,
+      avatarUrl: row.avatar_url,
+      createdAt: row.created_at,
     }));
   }
 }

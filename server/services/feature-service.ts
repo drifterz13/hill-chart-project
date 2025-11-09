@@ -12,26 +12,24 @@ export class FeatureService {
         left join assignees a on ta.assignee_id = a.id
         left join feature_progression fp on f.id = fp.feature_id
         order by f.created_at desc;
-      `.values();
+      `;
 
-    const data = values.reduce((acc: any, row: any[]) => {
-      const featureId = row[0];
-
-      if (!acc[featureId]) {
-        acc[featureId] = {
-          id: row[0],
-          name: row[1],
-          description: row[2],
-          status: row[3],
-          dueDate: row[4],
-          cretedAt: row[5],
-          stage: row[6],
-          percentage: row[7],
-          assignees: row[8]
+    const data = values.reduce((acc: any, row: any) => {
+      if (!acc[row.id]) {
+        acc[row.id] = {
+          id: row.id,
+          name: row.name,
+          description: row.description,
+          status: row.status,
+          dueDate: row.due_date,
+          cretedAt: row.created_at,
+          stage: row.stage,
+          percentage: row.percentage,
+          assignees: row.username
             ? [
                 {
-                  username: row[8],
-                  avatarUrl: row[9],
+                  username: row.username,
+                  avatarUrl: row.avatar_url,
                 },
               ]
             : [],
@@ -40,10 +38,10 @@ export class FeatureService {
         return acc;
       }
 
-      if (row[8]) {
-        acc[featureId].assignees.push({
-          username: row[8],
-          avatarUrl: row[9],
+      if (row.username) {
+        acc[row.id].assignees.push({
+          username: row.username,
+          avatarUrl: row.avatar_url,
         });
       }
 
@@ -54,7 +52,7 @@ export class FeatureService {
   }
 
   static async getFeature(featureId: number) {
-    const values = await sql`
+    const rows = await sql`
       SELECT DISTINCT
         f.id, f.name, f.description, f.status, f.due_date, f.created_at,
         fp.stage, fp.percentage, a.id as assignee_id, a.username, a.avatar_url
@@ -64,28 +62,27 @@ export class FeatureService {
       LEFT JOIN assignees a ON ta.assignee_id = a.id
       LEFT JOIN feature_progression fp ON f.id = fp.feature_id
       WHERE f.id = ${featureId}
-    `.values();
+    `;
 
-    if (values.length === 0) {
+    if (rows.length === 0) {
       return null;
     }
 
-    // Aggregate rows into a single feature with assignees array
     const feature = {
-      id: values[0][0],
-      name: values[0][1],
-      description: values[0][2],
-      status: values[0][3],
-      dueDate: values[0][4],
-      createdAt: values[0][5],
-      stage: values[0][6],
-      percentage: values[0][7],
-      assignees: values
-        .filter((row: any[]) => row[8] !== null)
-        .map((row: any[]) => ({
-          id: row[8],
-          username: row[9],
-          avatarUrl: row[10],
+      id: rows[0].id,
+      name: rows[0].name,
+      description: rows[0].description,
+      status: rows[0].status,
+      dueDate: rows[0].due_date,
+      createdAt: rows[0].created_at,
+      stage: rows[0].stage,
+      percentage: rows[0].percentage,
+      assignees: rows
+        .filter((row: any) => row.assignee_id)
+        .map((row: any) => ({
+          id: row.assignee_id,
+          username: row.username,
+          avatarUrl: row.avatar_url,
         })),
     };
 
@@ -110,12 +107,12 @@ export class FeatureService {
       description: feature.description || null,
     };
     return await sql.begin(async (sql) => {
-      const [featureResult] = await sql`
+      const [result] = await sql`
         INSERT INTO features ${sql(featureValue, "name", "description")}
         RETURNING id
-      `.values();
+      `;
 
-      const featureId = featureResult[0];
+      const featureId = result.id;
 
       if (feature.tasks && feature.tasks.length > 0) {
         const tasksValue = (feature.tasks || []).map((task) => ({
@@ -124,17 +121,17 @@ export class FeatureService {
           due_date: task.dueDate || null,
         }));
 
-        const [tasksResult] =
-          await sql`insert into tasks ${sql(tasksValue)} returning id`.values();
+        const [taskIdRows] =
+          await sql`insert into tasks ${sql(tasksValue)} returning id`;
 
         const taskAssigneeIds = feature.tasks.map(
           (task) => task.assigneeIds || [],
         );
 
-        if (tasksResult.length > 0) {
-          const taskAssignees = tasksResult.flatMap(
-            (taskRow: any[], index: number) => {
-              const taskId = taskRow[0];
+        if (taskIdRows.length > 0) {
+          const taskAssignees = taskIdRows.flatMap(
+            (taskIdRow: any, index: number) => {
+              const taskId = taskIdRow.id;
               const assigneeIds = taskAssigneeIds[index] || [];
 
               if (assigneeIds.length === 0) {
