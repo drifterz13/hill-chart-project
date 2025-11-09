@@ -1,83 +1,63 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { TaskApi } from "../api/task-api";
 import { FeatureApi } from "../api/feature-api";
-import type { Task } from "../types/task-types";
-import type { Feature } from "../types/feature-types";
 import TopNavBar from "../components/TopNavBar";
 import HillChart from "../components/HillChart";
 import TaskList from "../components/TaskList";
 import AddTaskModal from "../components/AddTaskModal";
+import useSWR from "swr";
+
+const SWR_KEY = {
+  GET_FEATURE: "GET_FEATURE",
+  GET_FEATURE_TASKS: "GET_FEATURE_TASKS",
+};
 
 export default function FeatureProgressPage() {
   const navigate = useNavigate();
   const { featureId } = useParams<{ featureId: string }>();
-  const [feature, setFeature] = useState<Feature | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!featureId) return;
-
-    let ignore = false;
-    const id = +featureId;
-
-    Promise.all([FeatureApi.getFeature(id), TaskApi.getTasksByFeatureId(id)])
-      .then(([featureData, tasksData]) => {
-        if (!ignore) {
-          setFeature(featureData);
-          setTasks(tasksData);
-        }
-      })
-      .catch(console.error);
-
-    return () => {
-      ignore = true;
-    };
-  }, [featureId]);
+  const { data: feature } = useSWR(
+    [SWR_KEY.GET_FEATURE, featureId],
+    ([_, id]) => FeatureApi.getFeature(+id!),
+  );
+  const { data: tasks = [], mutate: mutateTasks } = useSWR(
+    [SWR_KEY.GET_FEATURE_TASKS, featureId],
+    ([_, id]) => TaskApi.getTasksByFeatureId(+id!),
+  );
 
   const handlePositionChange = async (id: number, position: number) => {
-    // Optimistic update
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === id ? { ...task, position } : task)),
+    await mutateTasks(
+      async () => {
+        await TaskApi.updateTaskPosition(id, position);
+        return tasks.map((task) =>
+          task.id === id ? { ...task, position } : task,
+        );
+      },
+      {
+        optimisticData: tasks.map((task) =>
+          task.id === id ? { ...task, position } : task,
+        ),
+        rollbackOnError: true,
+      },
     );
-
-    try {
-      await TaskApi.updateTaskPosition(id, position);
-    } catch (error) {
-      console.error("Failed to update task position:", error);
-      // Revert on error
-      if (featureId) {
-        const tasksData = await TaskApi.getTasksByFeatureId(+featureId);
-        setTasks(tasksData);
-      }
-    }
   };
-
   const handleToggleTask = async (id: number, completed: boolean) => {
-    // Optimistic update
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === id ? { ...task, completed } : task)),
+    await mutateTasks(
+      async () => {
+        await TaskApi.updateTask(id, { completed });
+        return tasks.map((task) =>
+          task.id === id ? { ...task, completed } : task,
+        );
+      },
+      {
+        optimisticData: tasks.map((task) =>
+          task.id === id ? { ...task, completed } : task,
+        ),
+        rollbackOnError: true,
+      },
     );
-
-    try {
-      await TaskApi.updateTask(id, { completed });
-    } catch (error) {
-      console.error("Failed to update task:", error);
-      // Revert on error
-      if (featureId) {
-        const tasksData = await TaskApi.getTasksByFeatureId(+featureId);
-        setTasks(tasksData);
-      }
-    }
-  };
-
-  const handleClickTask = (id: number) => {
-    navigate(`/tasks/${id}`);
-  };
-
-  const handleAddTask = () => {
-    setIsAddModalOpen(true);
   };
 
   const handleSubmitTask = async (newTask: {
@@ -87,20 +67,27 @@ export default function FeatureProgressPage() {
   }) => {
     if (!featureId) return;
 
-    try {
-      await TaskApi.createTask(+featureId, {
-        title: newTask.title,
-        assigneeIds: newTask.assigneeIds,
-        dueDate: newTask.dueDate,
-      });
+    await mutateTasks(
+      async (currentTasks) => {
+        const createdTask = await TaskApi.createTask(+featureId, {
+          title: newTask.title,
+          assigneeIds: newTask.assigneeIds,
+          dueDate: newTask.dueDate,
+        });
 
-      // Refresh tasks list
-      const tasksData = await TaskApi.getTasksByFeatureId(+featureId);
-      setTasks(tasksData);
-      setIsAddModalOpen(false);
-    } catch (error) {
-      console.error("Failed to add task:", error);
-    }
+        return [...(currentTasks || []), createdTask];
+      },
+      { rollbackOnError: true },
+    );
+    setIsAddModalOpen(false);
+  };
+
+  const handleClickTask = (id: number) => {
+    navigate(`/tasks/${id}`);
+  };
+
+  const handleAddTask = () => {
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -144,7 +131,7 @@ export default function FeatureProgressPage() {
                     title: task.title,
                     completed: task.completed,
                     dueDate: task.dueDate,
-                    assignees: task.assignees.map((a) => ({
+                    assignees: (task.assignees || []).map((a) => ({
                       id: a.id,
                       src: a.avatarUrl,
                       alt: a.username,

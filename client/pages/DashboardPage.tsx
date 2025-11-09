@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../components/Sidebar";
 import DashboardTopBar from "../components/DashboardTopBar";
@@ -6,28 +6,19 @@ import { Plus, ChevronDown } from "lucide-react";
 import { FeatureApi } from "../api/feature-api";
 import type { Feature } from "../types/feature-types";
 import FeatureCard from "../components/FeatureCard";
+import useSWR from "swr";
+
+const SWR_KEY = {
+  GET_FEATURES: "GET_FEATURES",
+};
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [features, setFeatures] = useState<Feature[]>([]);
 
-  useEffect(() => {
-    let ignore = false;
-
-    setFeatures([]);
-    FeatureApi.getFeatures()
-      .then((features) => {
-        if (!ignore) {
-          setFeatures(features);
-        }
-      })
-      .catch(console.error);
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const { data: features = [] } = useSWR<Feature[]>(SWR_KEY.GET_FEATURES, () =>
+    FeatureApi.getFeatures(),
+  );
 
   const handleFeatureClick = (id: string | number) => {
     navigate(`/features/${id}`);
@@ -47,7 +38,7 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto bg-base-200">
         {/* Top Bar */}
         <DashboardTopBar onSearchChange={setSearchQuery} />
 

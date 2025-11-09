@@ -1,4 +1,8 @@
-import type { Task, CreateTaskRequest, UpdateTaskRequest } from "../types/task-types";
+import type {
+  Task,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+} from "../types/task-types";
 
 export class TaskApi {
   private static headers = new Headers({
@@ -25,7 +29,7 @@ export class TaskApi {
     if (!resp.ok) {
       throw new Error("Failed to create task");
     }
-    return resp.json() as Promise<{ id: number }>;
+    return resp.json();
   }
 
   static async updateTask(taskId: number, updates: UpdateTaskRequest) {

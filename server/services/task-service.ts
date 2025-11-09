@@ -90,15 +90,22 @@ export class TaskService {
       dueDate?: string;
     },
   ) {
-    const updateValue = Object.entries({
+    const updateData = {
       title: updates.title,
-      completed: updates.completed,
-      position: updates.position,
+      completed: updates.position === 100 ? true : updates.completed,
+      position: updates.completed
+        ? 100
+        : updates.completed === false
+          ? 25 // if marking as incomplete, set position to 25
+          : updates.position,
       due_date: updates.dueDate,
-    }).reduce(
-      (acc, [k, v]) => {
-        if (!v) return acc;
-        return { ...acc, [k]: v };
+      updated_at: new Date(),
+    };
+    // Filter out undefined values
+    const updateValue = Object.entries(updateData).reduce(
+      (acc, [key, val]) => {
+        if (val === undefined) return acc;
+        return { ...acc, [key]: val };
       },
       { updated_at: new Date() },
     );
@@ -107,7 +114,12 @@ export class TaskService {
   }
 
   static async updateTaskPosition(taskId: number, position: number) {
-    await sql`update tasks set ${sql({ position, updated_at: new Date() })} where id = ${taskId}`;
+    const updateValue = {
+      position,
+      completed: position === 100 ? true : false,
+      updated_at: new Date(),
+    };
+    await sql`update tasks set ${sql(updateValue)} where id = ${taskId}`;
   }
 
   static async deleteTask(taskId: number) {

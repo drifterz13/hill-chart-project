@@ -67,7 +67,7 @@ export default function FeatureCard({
 
   return (
     <div
-      className="flex flex-col gap-4 p-5 rounded-xl bg-base-100 border border-base-200 hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer"
+      className="flex flex-col gap-4 p-5 rounded-xl bg-base-100 border border-base-200 hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer shadow-md"
       onClick={() => onClick?.(id)}
     >
       {/* Header */}
