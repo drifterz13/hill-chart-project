@@ -1,12 +1,14 @@
-import homepage from "../public/index.html";
+import spaPage from "../public/index.html";
 import { FeatureService } from "./services/feature-service";
 import { TaskService } from "./services/task-service";
 
 const server = Bun.serve({
   port: Bun.env.PORT || 3000,
   routes: {
-    "/": homepage,
-    "/features/*": homepage,
+    // SPA routes
+    "/": spaPage,
+    "/features/*": spaPage,
+    // API routes
     "/api/health": () => new Response("OK"),
     "/api/features": {
       GET: async () => {

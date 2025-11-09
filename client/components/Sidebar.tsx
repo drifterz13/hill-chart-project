@@ -4,7 +4,6 @@ import {
   Calendar,
   BarChart3,
   Settings,
-  Flag,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
@@ -45,7 +44,9 @@ export default function Sidebar({
 
       <nav className="flex flex-col gap-2">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.href;
+          const isActive =
+            location.pathname === item.href ||
+            (item.href === "/" && location.pathname.startsWith("/features"));
           return (
             <Link
               key={item.href}

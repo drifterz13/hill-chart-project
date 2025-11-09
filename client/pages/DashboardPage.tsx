@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../components/Sidebar";
-import DashboardTopBar from "../components/DashboardTopBar";
+import TopBar from "../components/TopBar";
 import { Plus, ChevronDown } from "lucide-react";
 import { FeatureApi } from "../api/feature-api";
 import type { Feature } from "../types/feature-types";
@@ -40,7 +40,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto bg-base-200">
         {/* Top Bar */}
-        <DashboardTopBar onSearchChange={setSearchQuery} />
+        <TopBar onSearchChange={setSearchQuery} />
 
         {/* Page Content */}
         <div className="flex-1 p-10">
