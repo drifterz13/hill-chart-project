@@ -10,3 +10,11 @@ export const randNth = (arr: any[], n: number = 1): any[] => {
 
   return Array.from(result);
 };
+
+export const randPercent = (): number => {
+  return Math.floor(Math.random() * 101);
+};
+
+export const randBool = (): boolean => {
+  return Math.random() < 0.5;
+};

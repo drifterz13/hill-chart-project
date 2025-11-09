@@ -3,15 +3,15 @@ import { sql } from "bun";
 export class TaskService {
   static async getTasksByFeatureId(featureId: number) {
     const values = await sql`
-      SELECT
+      select
         t.id, t.title, t.completed, t.position, t.due_date,
         t.created_at, t.updated_at,
         a.id as assignee_id, a.username, a.avatar_url
-      FROM tasks t
-      LEFT JOIN task_assignees ta ON t.id = ta.task_id
-      LEFT JOIN assignees a ON ta.assignee_id = a.id
-      WHERE t.feature_id = ${featureId}
-      ORDER BY t.created_at DESC
+      from tasks t
+      left join task_assignees ta ON t.id = ta.task_id
+      left join assignees a ON ta.assignee_id = a.id
+      where t.feature_id = ${featureId}
+      order by t.created_at desc
     `;
 
     const data = values.reduce((acc: any, row: any) => {
@@ -63,8 +63,8 @@ export class TaskService {
     };
     return await sql.begin(async (sql) => {
       const values = await sql`
-        INSERT INTO tasks ${sql(taskValue, "title", "feature_id", "due_date")}
-        RETURNING id
+        insert into tasks ${sql(taskValue, "title", "feature_id", "due_date")}
+        returning id
       `;
       const taskId = values[0].id;
 
@@ -97,38 +97,28 @@ export class TaskService {
       due_date: updates.dueDate,
     }).reduce(
       (acc, [k, v]) => {
-        if (v === undefined) return acc;
+        if (!v) return acc;
         return { ...acc, [k]: v };
       },
       { updated_at: new Date() },
     );
 
-    await sql`
-      UPDATE tasks
-      SET ${sql(updateValue)}
-      WHERE id = ${taskId}
-    `;
+    await sql`update tasks set ${sql(updateValue)} where id = ${taskId}`;
   }
 
   static async updateTaskPosition(taskId: number, position: number) {
-    await sql`
-      UPDATE tasks
-      SET position = ${position}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${taskId}
-    `;
+    await sql`update tasks set ${sql({ position, updated_at: new Date() })} where id = ${taskId}`;
   }
 
   static async deleteTask(taskId: number) {
-    await sql`
-      DELETE FROM tasks WHERE id = ${taskId}
-    `;
+    await sql`delete from tasks where id = ${taskId}`;
   }
 
   static async getAssignees() {
     const values = await sql`
-      SELECT id, username, avatar_url, created_at
-      FROM assignees
-      ORDER BY username ASC
+      select id, username, avatar_url, created_at
+      from assignees
+      order by username asc
     `;
 
     return values.map((row: any) => ({

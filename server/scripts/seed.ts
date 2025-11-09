@@ -2,7 +2,7 @@ import { sql } from "bun";
 import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import dayjs from "dayjs";
-import { randNth } from "../utils";
+import { randBool, randNth, randPercent } from "../utils";
 
 const features = [
   {
@@ -30,10 +30,30 @@ const insertedFeatures = await sql`
 const featureIds = insertedFeatures.map((f: { id: number }) => f.id);
 const tasks = featureIds.flatMap((featureId: number) => {
   return [
-    { feature_id: featureId, title: `#1 Task for feature ${featureId}` },
-    { feature_id: featureId, title: `#2 Task for feature ${featureId}` },
-    { feature_id: featureId, title: `#3 Task for feature ${featureId}` },
-    { feature_id: featureId, title: `#4 Task for feature ${featureId}` },
+    {
+      feature_id: featureId,
+      title: `#1 Task for feature ${featureId}`,
+      completed: randBool(),
+      position: randPercent(),
+    },
+    {
+      feature_id: featureId,
+      title: `#2 Task for feature ${featureId}`,
+      completed: randBool(),
+      position: randPercent(),
+    },
+    {
+      feature_id: featureId,
+      title: `#3 Task for feature ${featureId}`,
+      completed: randBool(),
+      position: randPercent(),
+    },
+    {
+      feature_id: featureId,
+      title: `#4 Task for feature ${featureId}`,
+      completed: randBool(),
+      position: randPercent(),
+    },
   ];
 });
 
@@ -80,8 +100,6 @@ const insertedAssigneeIds =
 
 const assigneeIds = insertedAssigneeIds.map((a: { id: number }) => a.id);
 
-
-
 const taskAssignees = taskIds.flatMap((taskId: number) => {
   const numAssignees = Math.random() < 0.5 ? 1 : 2;
   const randomAssigneeIds = randNth(assigneeIds, numAssignees);
@@ -92,12 +110,3 @@ const taskAssignees = taskIds.flatMap((taskId: number) => {
 });
 console.log("Seeding task assignees...");
 await sql`insert into task_assignees ${sql(taskAssignees)}`;
-
-const featureProgressions = featureIds.map((featureId: number) => ({
-  feature_id: featureId,
-  stage: randNth(["uphill", "at-peak", "downhill"]),
-  percentage: Math.floor(Math.random() * 100),
-}));
-
-console.log("Seeding feature progressions...");
-await sql`insert into feature_progression ${sql(featureProgressions)}`;

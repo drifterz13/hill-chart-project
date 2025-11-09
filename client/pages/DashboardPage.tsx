@@ -70,21 +70,15 @@ export default function DashboardPage() {
           {/* Filter Chips */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
             <button className="btn btn-outline h-8 px-3">
-              <p className="text-sm font-medium">
-                Sort: Last Updated
-              </p>
+              <p className="text-sm font-medium">Sort: Last Updated</p>
               <ChevronDown size={16} />
             </button>
             <button className="btn btn-primary btn-outline h-8 px-3">
-              <p className="text-sm font-medium">
-                Status: Active
-              </p>
+              <p className="text-sm font-medium">Status: Active</p>
               <ChevronDown size={16} />
             </button>
             <button className="btn btn-outline h-8 px-3">
-              <p className="text-sm font-medium">
-                Filter: Archived
-              </p>
+              <p className="text-sm font-medium">Filter: Archived</p>
               <ChevronDown size={16} />
             </button>
           </div>
@@ -104,7 +98,7 @@ export default function DashboardPage() {
                   alt: `Avatar of ${assignee.username}`,
                 }))}
                 dueDate={feature.dueDate}
-                progress={feature.progress}
+                progress={feature.percentage}
                 onClick={handleFeatureClick}
                 onMenuClick={handleFeatureMenuClick}
               />

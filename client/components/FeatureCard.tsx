@@ -92,14 +92,14 @@ export default function FeatureCard({
       </div>
 
       {/* Status or Progress */}
-      {stageInfo ? (
+      {stageInfo && (
         <div className="flex items-center gap-2">
           <SignalHigh size={20} className={stageInfo.color} />
-          <p className="text-base-content/60 text-sm">
-            {stageInfo.label}
-          </p>
+          <p className="text-base-content/60 text-sm">{stageInfo.label}</p>
         </div>
-      ) : progress !== undefined ? (
+      )}
+
+      {progress !== undefined && (
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-sm font-medium text-base-content/60">
@@ -110,13 +110,14 @@ export default function FeatureCard({
             </span>
           </div>
           <div className="w-full bg-base-200 rounded-full h-1.5">
-            <div
-              className="bg-success h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+            <progress
+              className={`progress progress-primary w-56`}
+              value={progress}
+              max={100}
             />
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between">
@@ -126,9 +127,7 @@ export default function FeatureCard({
           <div />
         )}
         {dueDateInfo && (
-          <p className="text-base-content/60 text-xs">
-            {dueDateInfo}
-          </p>
+          <p className="text-base-content/60 text-xs">{dueDateInfo}</p>
         )}
       </div>
     </div>

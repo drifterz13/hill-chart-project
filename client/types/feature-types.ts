@@ -12,9 +12,8 @@ export type Feature = {
   description: string;
   status: FeatureStatus;
   stage: FeatureStage;
-  progress: number;
+  percentage: number; // Progress percentage from 0 to 100
   dueDate: Date;
   createdAt: Date;
-  percentage: number;
   assignees: FeatureAssignee[];
 };
