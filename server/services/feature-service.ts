@@ -1,5 +1,6 @@
 import { sql } from "bun";
 import { ProgressionService } from "./progression-service";
+import { resolveImageUrl } from "../utils";
 
 export class FeatureService {
   static async getFeatures() {
@@ -34,7 +35,7 @@ export class FeatureService {
             ? [
                 {
                   username: row.username,
-                  avatarUrl: row.avatar_url,
+                  avatarUrl: resolveImageUrl(row.avatar_url),
                 },
               ]
             : [],
@@ -46,7 +47,7 @@ export class FeatureService {
       if (row.username) {
         acc[row.id].assignees.push({
           username: row.username,
-          avatarUrl: row.avatar_url,
+          avatarUrl: resolveImageUrl(row.avatar_url),
         });
       }
 

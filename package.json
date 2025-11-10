@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot server/index.ts",
+    "start:prod": "NODE_ENV=production cd dist && bun index.js",
+    "build": "bun run build.ts",
     "db:gen": "bun run server/scripts/gen-migration.ts",
     "db:migrate": "bun run server/scripts/migrate.ts",
     "db:drop": "bun run server/scripts/drop-db.ts",

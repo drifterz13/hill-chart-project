@@ -27,7 +27,7 @@ const server = Bun.serve({
     },
     "/api/features/:id": {
       GET: async (req) => {
-        const featureId = parseInt(req.params.id);
+        const featureId = +req.params.id;
         const feature = await FeatureService.getFeature(featureId);
         if (!feature) {
           return new Response("Feature not found", { status: 404 });
@@ -37,12 +37,12 @@ const server = Bun.serve({
     },
     "/api/features/:id/tasks": {
       GET: async (req) => {
-        const featureId = parseInt(req.params.id);
+        const featureId = +req.params.id;
         const tasks = await TaskService.getTasksByFeatureId(featureId);
         return Response.json(tasks);
       },
       POST: async (req) => {
-        const featureId = parseInt(req.params.id);
+        const featureId = +req.params.id;
         const body = await req.json();
         const taskId = await TaskService.createTask({
           title: body.title,
@@ -56,20 +56,20 @@ const server = Bun.serve({
 
     "/api/tasks/:id": {
       PATCH: async (req) => {
-        const taskId = parseInt(req.params.id);
+        const taskId = +req.params.id;
         const body = await req.json();
         await TaskService.updateTask(taskId, body);
         return new Response("Task Updated", { status: 200 });
       },
       DELETE: async (req) => {
-        const taskId = parseInt(req.params.id);
+        const taskId = +req.params.id;
         await TaskService.deleteTask(taskId);
         return new Response("Task Deleted", { status: 200 });
       },
     },
     "/api/tasks/:id/position": {
       PATCH: async (req) => {
-        const taskId = parseInt(req.params.id);
+        const taskId = +req.params.id;
         const body = await req.json();
         await TaskService.updateTaskPosition(taskId, body.position);
         return new Response("Position Updated", { status: 200 });
@@ -86,13 +86,29 @@ const server = Bun.serve({
     const url = new URL(req.url);
     const path = url.pathname;
 
-    // Handle static image files
-    const imagePath = `./public/images${path}`;
+    if (path.startsWith("/todoi/")) {
+      const fileName = path.replace("/todoi/", "");
+      const assetPath = `./${fileName}`;
 
+      try {
+        const file = Bun.file(assetPath);
+        if (await file.exists()) {
+          return new Response(file);
+        }
+      } catch (error) {
+        console.error("Error serving bundled asset:", error);
+        return new Response("Internal Server Error", { status: 500 });
+      }
+    }
+
+    const imagePath =
+      Bun.env.NODE_ENV === "production"
+        ? `../public/images${path}`
+        : `./public/images${path}`;
     try {
       const file = Bun.file(imagePath);
       if (await file.exists()) {
-        return new Response(file); // Bun automatically sets Content-Type
+        return new Response(file);
       } else {
         return new Response("Not Found", { status: 404 });
       }

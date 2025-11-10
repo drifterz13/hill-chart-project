@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { resolveImageUrl } from "../utils";
 
 export class TaskService {
   static async getTasksByFeatureId(featureId: number) {
@@ -29,7 +30,7 @@ export class TaskService {
                 {
                   id: row.assignee_id,
                   username: row.username,
-                  avatarUrl: row.avatar_url,
+                  avatarUrl: resolveImageUrl(row.avatar_url),
                 },
               ]
             : [],
@@ -41,7 +42,7 @@ export class TaskService {
         acc[row.id].assignees.push({
           id: row.assignee_id,
           username: row.username,
-          avatarUrl: row.avatar_url,
+          avatarUrl: resolveImageUrl(row.avatar_url),
         });
         return acc;
       }

@@ -18,3 +18,14 @@ export const randPercent = (): number => {
 export const randBool = (): boolean => {
   return Math.random() < 0.5;
 };
+
+export const resolveImageUrl = (imageUrl: string): string => {
+  const filename = imageUrl.split("/").pop();
+  const host = Bun.env.HOST || "localhost";
+
+  if (Bun.env.NODE_ENV === "production" && host !== "localhost") {
+    return `https://${host}/${filename}`;
+  }
+
+  return `http://${host}:${Bun.env.PORT}/${filename}`;
+};
